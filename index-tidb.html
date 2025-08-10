@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TiDB: The Distributed HTAP Database</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .flowchart-arrow {
+            position: relative;
+            width: 100%;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #0582CA;
+            font-weight: bold;
+        }
+        .flowchart-arrow-horizontal {
+             position: relative;
+            width: 2rem;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #0582CA;
+            font-weight: bold;
+        }
+        .flowchart-arrow::after {
+            content: '\2193';
+        }
+        .flowchart-arrow-horizontal::after {
+            content: '\2192';
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            height: 100%;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .kpi-value {
+            font-weight: 900;
+            color: #006494;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white sticky top-0 z-50 shadow-md">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold text-[#006494]">TiDB Deep Dive</div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#architecture" class="text-gray-600 hover:text-[#00A6FB]">Architecture</a>
+                    <a href="#htap" class="text-gray-600 hover:text-[#00A6FB]">HTAP</a>
+                    <a href="#features" class="text-gray-600 hover:text-[#00A6FB]">Features</a>
+                    <a href="#comparison" class="text-gray-600 hover:text-[#00A6FB]">Comparison</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+
+        <section class="text-center mb-16">
+            <h1 class="text-4xl md:text-6xl font-black text-[#006494] mb-4">TiDB Explained</h1>
+            <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">A visual guide to the future-proof, distributed SQL database built for elastic scalability and real-time analytics.</p>
+        </section>
+
+        <section id="architecture" class="mb-16 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#006494]">The Disaggregated Architecture</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">TiDB's power comes from separating compute from storage. This allows for independent scaling of resources, providing unparalleled flexibility and efficiency for any workload.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="card flex flex-col items-center justify-center p-6">
+                    <div class="text-6xl">🧠</div>
+                    <h3 class="text-2xl font-bold mt-4 mb-2 text-[#0582CA]">PD (Placement Driver)</h3>
+                    <p class="font-semibold">The Brain</p>
+                    <p class="text-sm">Manages cluster metadata, schedules data placement (replication), and ensures global consistency.</p>
+                </div>
+                <div class="card flex flex-col items-center justify-center p-6">
+                    <div class="text-6xl">💻</div>
+                    <h3 class="text-2xl font-bold mt-4 mb-2 text-[#0582CA]">TiDB Server</h3>
+                    <p class="font-semibold">Stateless SQL Compute</p>
+                    <p class="text-sm">Parses SQL queries, builds execution plans, and processes data. It's MySQL compatible and scales out effortlessly.</p>
+                </div>
+                <div class="card flex flex-col items-center justify-center p-6">
+                     <div class="text-6xl">🗄️</div>
+                    <h3 class="text-2xl font-bold mt-4 mb-2 text-[#0582CA]">TiKV / TiFlash</h3>
+                    <p class="font-semibold">Distributed Storage</p>
+                    <p class="text-sm">The actual data lives here. TiKV for row-based transactional data, and TiFlash for columnar analytical data. Both scale out.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="htap" class="mb-16 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#006494]">The HTAP Advantage: One Database, Two Workloads</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">Hybrid Transactional/Analytical Processing (HTAP) means TiDB can serve as both your primary OLTP database for user-facing applications and your OLAP database for real-time analytics, eliminating complex and slow ETL processes.</p>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-3 text-center text-[#0582CA]">Application & Analytics Flow</h3>
+                    <div class="flex flex-col items-center">
+                        <div class="bg-gray-100 p-4 rounded-lg w-full text-center">
+                            <p class="font-bold">Your Application / BI Tool</p>
+                            <p class="text-sm text-gray-600">(MySQL Wire Protocol)</p>
+                        </div>
+                        <div class="flowchart-arrow"></div>
+                        <div class="bg-[#006494] text-white p-4 rounded-lg w-full text-center font-bold">TiDB SQL Gateway</div>
+                        <div class="flex w-full mt-4">
+                            <div class="w-1/2 text-center">
+                                <p class="font-semibold">OLTP Query</p>
+                                <div class="flowchart-arrow"></div>
+                                <div class="bg-[#0582CA] text-white p-3 rounded-lg">TiKV (Row Store)</div>
+                            </div>
+                            <div class="w-1/2 text-center">
+                                 <p class="font-semibold">OLAP Query</p>
+                                <div class="flowchart-arrow"></div>
+                                <div class="bg-[#FBAF00] text-black p-3 rounded-lg">TiFlash (Columnar)</div>
+                            </div>
+                        </div>
+                    </div>
+                     <p class="text-center text-sm mt-4 text-gray-600">The TiDB optimizer intelligently routes queries to the appropriate storage engine for maximum performance.</p>
+                </div>
+                <div class="card">
+                     <h3 class="text-xl font-bold mb-3 text-center text-[#0582CA]">Workload Performance Profile</h3>
+                    <p class="mb-4 text-center">TiDB is engineered to deliver high performance for both transactional and analytical queries simultaneously, a task that cripples traditional databases.</p>
+                    <div class="chart-container">
+                        <canvas id="htapChart"></canvas>
+                    </div>
+                     <p class="text-center text-sm mt-2 text-gray-600">This chart shows how TiDB maintains high performance for both workload types, while traditional databases must sacrifice one for the other.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="mb-16 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#006494]">Core Superpowers</h2>
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card text-center p-6">
+                    <div class="text-7xl kpi-value">↔️</div>
+                    <h3 class="text-2xl font-bold mt-4 mb-2 text-[#0582CA]">Elastic Horizontal Scaling</h3>
+                    <p>Linearly scale both reads and writes by simply adding more nodes. Grow from a small cluster to a massive one with no downtime or manual sharding.</p>
+                </div>
+                 <div class="card text-center p-6">
+                    <div class="text-7xl kpi-value">🤝</div>
+                    <h3 class="text-2xl font-bold mt-4 mb-2 text-[#0582CA]">MySQL Compatibility</h3>
+                    <p>Speaks the MySQL wire protocol and supports its syntax. Migrate existing applications with minimal to no code changes. Use your favorite MySQL tools and drivers.</p>
+                </div>
+                <div class="card text-center p-6">
+                    <div class="text-7xl kpi-value">🛡️</div>
+                    <h3 class="text-2xl font-bold mt-4 mb-2 text-[#0582CA]">High Availability</h3>
+                    <p>Data is automatically replicated across multiple nodes using the Raft consensus algorithm. TiDB survives node or even data center failures without data loss.</p>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="comparison" class="mb-16 scroll-mt-24">
+            <h2 class="text-3xl font-bold text-center mb-8 text-[#006494]">TiDB vs. Traditional Databases</h2>
+            <p class="text-center max-w-3xl mx-auto mb-8">How does TiDB stack up against the databases you use today? It combines the best of both worlds: the familiar SQL interface of traditional RDBMS with the scalability of NoSQL.</p>
+            <div class="card p-0 md:p-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b-2 border-[#00A6FB]">
+                                <th class="p-3 font-bold">Capability</th>
+                                <th class="p-3 font-bold text-[#006494]">TiDB</th>
+                                <th class="p-3 font-bold">Traditional SQL (e.g., MySQL)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="p-3 font-semibold">Scalability Model</td>
+                                <td class="p-3 text-[#006494] font-medium">Horizontal (Scale Out)</td>
+                                <td class="p-3">Vertical (Scale Up)</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-3 font-semibold">Consistency</td>
+                                <td class="p-3 text-[#006494] font-medium">Strong (ACID via Raft)</td>
+                                <td class="p-3">Strong (Single Node ACID)</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-3 font-semibold">Analytical Queries</td>
+                                <td class="p-3 text-[#006494] font-medium">High-Performance (Columnar)</td>
+                                <td class="p-3">Slow (Row-based, impacts OLTP)</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="p-3 font-semibold">Fault Tolerance</td>
+                                <td class="p-3 text-[#006494] font-medium">Built-in, Automated Failover</td>
+                                <td class="p-3">Requires manual setup (e.g., Replication)</td>
+                            </tr>
+                             <tr>
+                                <td class="p-3 font-semibold">Sharding</td>
+                                <td class="p-3 text-[#006494] font-medium">Automatic & Transparent</td>
+                                <td class="p-3">Manual & Complex Application Logic</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="use-cases" class="scroll-mt-24">
+             <h2 class="text-3xl font-bold text-center mb-8 text-[#006494]">Common Use Cases</h2>
+             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="card text-center p-6">
+                    <div class="text-5xl mb-3">💳</div>
+                    <h3 class="text-xl font-bold text-[#0582CA]">FinTech & Payments</h3>
+                    <p class="text-sm">Handles high-throughput transactions with strong consistency while running real-time fraud detection analytics.</p>
+                </div>
+                <div class="card text-center p-6">
+                    <div class="text-5xl mb-3">🛒</div>
+                    <h3 class="text-xl font-bold text-[#0582CA]">E-commerce</h3>
+                    <p class="text-sm">Manages massive product catalogs and order volumes, scaling seamlessly for flash sales and providing real-time inventory analysis.</p>
+                </div>
+                <div class="card text-center p-6">
+                    <div class="text-5xl mb-3">🎮</div>
+                    <h3 class="text-xl font-bold text-[#0582CA]">Online Gaming</h3>
+                    <p class="text-sm">Powers user profiles, leaderboards, and in-game economies with low latency, scaling to millions of concurrent users.</p>
+                </div>
+                 <div class="card text-center p-6">
+                    <div class="text-5xl mb-3">📈</div>
+                    <h3 class="text-xl font-bold text-[#0582CA]">SaaS Platforms</h3>
+                    <p class="text-sm">Provides a single backend for multi-tenant applications that require both fast transactional responses and user-facing analytics dashboards.</p>
+                </div>
+             </div>
+        </section>
+    </main>
+
+    <footer class="bg-white mt-16 py-8">
+        <div class="container mx-auto px-6 text-center text-gray-600">
+            <p class="font-bold text-lg text-[#006494]">Conclusion: A Database Built for Tomorrow</p>
+            <p class="max-w-3xl mx-auto mt-2">TiDB resolves the architectural dilemma between transactional and analytical databases, offering a single, scalable, and resilient platform to power modern, data-intensive applications.</p>
+        </div>
+    </footer>
+
+    <script>
+        const tooltipTitleCallback = (tooltipItems) => {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+                return label.join(' ');
+            }
+            return label;
+        };
+
+        const sharedChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                    callbacks: {
+                        title: tooltipTitleCallback
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        stepSize: 20
+                    }
+                }
+            }
+        };
+
+        const htapCtx = document.getElementById('htapChart').getContext('2d');
+        new Chart(htapCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Transactional (OLTP) Speed', 'Analytical (OLAP) Speed'],
+                datasets: [{
+                    label: 'Traditional Database',
+                    data: [95, 20],
+                    backgroundColor: '#FBAF00',
+                    borderColor: '#FBAF00',
+                    borderWidth: 1
+                }, {
+                    label: 'TiDB HTAP',
+                    data: [90, 85],
+                    backgroundColor: '#0582CA',
+                    borderColor: '#0582CA',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                ...sharedChartOptions,
+                plugins: {
+                    ...sharedChartOptions.plugins,
+                    title: {
+                        display: false
+                    },
+                    tooltip: {
+                        ...sharedChartOptions.plugins.tooltip,
+                        callbacks: {
+                            ...sharedChartOptions.plugins.tooltip.callbacks,
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y + '% Performance Score';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
